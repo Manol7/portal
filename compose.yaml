@@ -1,0 +1,24 @@
+services:
+  php:
+    build: ./docker/php
+    user: "${LOCAL_UID}:${LOCAL_GID}"
+    volumes:
+      - ./app:/var/www/html
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/var/www/html:ro
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - php
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
