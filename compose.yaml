@@ -2,8 +2,13 @@ services:
   php:
     build: ./docker/php
     user: "${LOCAL_UID}:${LOCAL_GID}"
+    environment:
+      DATABASE_URL: "mysql://portal:${DB_PASSWORD:?Ustaw DB_PASSWORD w .env}@db:3306/portal?charset=utf8mb4"
     volumes:
       - ./app:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   caddy:
@@ -18,7 +23,23 @@ services:
     depends_on:
       - php
     restart: unless-stopped
-
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: portal
+      MARIADB_USER: portal
+      MARIADB_PASSWORD: "${DB_PASSWORD:?Ustaw DB_PASSWORD w .env}"
+      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:?Ustaw DB_ROOT_PASSWORD w .env}"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 volumes:
   caddy_data:
   caddy_config:
+  db_data:

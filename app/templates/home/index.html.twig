@@ -27,6 +27,12 @@
     </style>
 </head>
 <body>
+    {% if app.user %}
+        <p>
+            Zalogowany: {{ app.user.userIdentifier }}
+            · <a href="{{ path('app_logout') }}">Wyloguj się</a>
+        </p>
+    {% endif %}
     <main>
         <h1>Portal Kamila</h1>
         <p>Pierwsza aktualizacja przez Git.</p>
