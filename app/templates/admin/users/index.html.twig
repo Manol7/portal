@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Użytkownicy — Portal{% endblock %}
+
+{% block body %}
+    <main style="max-width: 900px; margin: 40px auto; padding: 20px;">
+        <p><a href="{{ path('app_home') }}">← Powrót do portalu</a></p>
+
+        <h1>Użytkownicy</h1>
+
+        {% for message in app.flashes('success') %}
+            <p role="status">{{ message }}</p>
+        {% endfor %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>E-mail</th>
+                    <th>Rola</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if 'ROLE_SUPER_ADMIN' in user.roles %}
+                                Superadministrator
+                            {% elseif 'ROLE_ADMIN' in user.roles %}
+                                Administrator
+                            {% else %}
+                                Użytkownik
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3">Brak użytkowników.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Nowe konto</h2>
+
+        {{ form_start(form) }}
+            {{ form_errors(form) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.role) }}
+            {{ form_row(form.plainPassword) }}
+
+            <button type="submit">Utwórz konto</button>
+        {{ form_end(form) }}
+    </main>
+{% endblock %}

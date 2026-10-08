@@ -27,16 +27,21 @@
     </style>
 </head>
 <body>
-    {% if app.user %}
+    <main>
+        {% if app.user %}
         <p>
             Zalogowany: {{ app.user.userIdentifier }}
             · <a href="{{ path('app_logout') }}">Wyloguj się</a>
         </p>
-    {% endif %}
-    <main>
+        {% endif %}
         <h1>Portal Kamila</h1>
         <p>Pierwsza aktualizacja przez Git.</p>
         <p class="status">Środowisko działa poprawnie.</p>
+        {% if is_granted('ROLE_SUPER_ADMIN') %}
+        <p>
+            <a href="{{ path('app_admin_users') }}">Zarządzaj użytkownikami</a>
+        </p>
+        {% endif %}
     </main>
 </body>
 </html>
