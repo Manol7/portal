@@ -39,6 +39,8 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3306:3306"
 volumes:
   caddy_data:
   caddy_config:
