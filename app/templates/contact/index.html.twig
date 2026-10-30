@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% set breadcrumbs = ['nav.contact'] %}
+
+{% block title %}{{ t('contact.title') }}{% endblock %}
+
+{% block body %}
+    <main class="admin-page admin-users-page contact-page">
+        <header class="admin-header">
+            <div>
+                <span class="admin-label">{{ t('contact.label') }}</span>
+                <h1>{{ t('contact.heading') }}</h1>
+                <p class="contact-lead">{{ t('contact.text') }}</p>
+            </div>
+        </header>
+
+        <div class="admin-grid">
+        <section class="admin-panel contact-panel">
+            <div class="admin-form">
+                {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+                    {{ form_errors(form) }}
+                    {{ form_row(form.email) }}
+                    {{ form_row(form.subject) }}
+                    {{ form_row(form.message) }}
+                    <div class="contact-trap" aria-hidden="true">
+                        {{ form_label(form.website) }}
+                        {{ form_widget(form.website) }}
+                    </div>
+                    <button type="submit">{{ t('contact.submit') }}</button>
+                {{ form_end(form) }}
+            </div>
+        </section>
+        </div>
+    </main>
+{% endblock %}

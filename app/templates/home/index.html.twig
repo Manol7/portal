@@ -1,47 +1,43 @@
-<!doctype html>
-<html lang="pl">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Portal Kamila</title>
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            background: #101827;
-            color: #eef2ff;
-            font-family: system-ui, sans-serif;
-        }
-        main {
-            width: min(440px, calc(100% - 80px));
-            padding: 32px;
-            background: #1b263b;
-            border: 1px solid #334155;
-            border-radius: 16px;
-        }
-        h1 { margin-top: 0; }
-        p { color: #b8c5d9; line-height: 1.6; }
-        .status { color: #86efac; }
-    </style>
-</head>
-<body>
-    <main>
-        {% if app.user %}
-        <p>
-            Zalogowany: {{ app.user.userIdentifier }}
-            · <a href="{{ path('app_logout') }}">Wyloguj się</a>
-        </p>
-        {% endif %}
-        <h1>Portal Kamila</h1>
-        <p>Pierwsza aktualizacja przez Git.</p>
-        <p class="status">Środowisko działa poprawnie.</p>
-        {% if is_granted('ROLE_SUPER_ADMIN') %}
-        <p>
-            <a href="{{ path('app_admin_users') }}">Zarządzaj użytkownikami</a>
-        </p>
-        {% endif %}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ t('home.title') }}{% endblock %}
+
+{% block body %}
+
+    <main class="portal-page">
+        <section class="portal-content">
+            <div class="portal-intro">
+                <span class="portal-label">{{ t('home.label') }}</span>
+                <h1>{{ t('home.heading')|nl2br }}</h1>
+                <p>{{ t('home.text') }}</p>
+            </div>
+
+
+            <section class="portal-card portal-menu" aria-labelledby="portal-menu-title">
+                <span class="portal-label">{{ t('home.center') }}</span>
+                <strong id="portal-menu-title">{{ t('home.quick') }}</strong>
+                <div class="portal-menu-list">
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a class="portal-menu-item" href="{{ path('app_admin') }}">
+                            <span>{{ t('home.admin') }}</span>
+                            <span aria-hidden="true">↗</span>
+                        </a>
+                    {% endif %}
+                    <a class="portal-menu-item" href="{{ path('app_tasks') }}">
+                        <span>{{ t('home.tasks') }}</span>
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                    <a class="portal-menu-item" href="{{ path('app_contact') }}">
+                        <span>{{ t('home.contact') }}</span>
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                    <span class="portal-menu-item is-muted">
+                        <span>{{ t('home.more') }}</span>
+                        <span>{{ t('home.soon') }}</span>
+                    </span>
+                </div>
+            </section>
+        </section>
+
     </main>
-</body>
-</html>
+{% endblock %}

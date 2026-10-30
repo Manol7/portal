@@ -1,0 +1,15 @@
+{# Menu zębatki dla administratorów. Nowa pozycja = kolejny element w .app-gear-panel. #}
+<div class="app-gear">
+    <button class="app-gear-button" type="button" aria-label="{{ tp('gear.aria') }}" aria-haspopup="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+    <div class="app-gear-menu">
+        <div class="app-gear-panel" role="menu">
+            <label class="app-gear-item">
+                <span>{{ t('gear.live') }}</span>
+                <input class="app-switch" type="checkbox" role="menuitemcheckbox" data-live-toggle{% if live_translate() %} checked{% endif %}>
+            </label>
+            <a class="app-gear-item" href="{{ path('app_admin') }}" role="menuitem">{{ t('nav.admin') }}</a>
+        </div>
+    </div>
+</div>

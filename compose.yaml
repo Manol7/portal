@@ -4,6 +4,9 @@ services:
     user: "${LOCAL_UID}:${LOCAL_GID}"
     environment:
       DATABASE_URL: "mysql://portal:${DB_PASSWORD:?Ustaw DB_PASSWORD w .env}@db:3306/portal?charset=utf8mb4"
+      MAILER_DSN: "${MAILER_DSN:-null://null}"
+      MAILER_FROM: "${MAILER_FROM:-no-reply@portal.local}"
+      CONTACT_RECIPIENT: "${CONTACT_RECIPIENT:-contact@portal.local}"
     volumes:
       - ./app:/var/www/html
     depends_on:
@@ -22,6 +25,13 @@ services:
       - caddy_config:/config
     depends_on:
       - php
+    restart: unless-stopped
+  # Lokalny podgląd maili (UI: http://localhost:8025). Włączany przez COMPOSE_PROFILES=dev.
+  mailpit:
+    image: axllent/mailpit
+    profiles: ["dev"]
+    ports:
+      - "127.0.0.1:8025:8025"
     restart: unless-stopped
   db:
     image: mariadb:11.4

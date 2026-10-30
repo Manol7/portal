@@ -1,0 +1,19 @@
+{# Okno poprawy tłumaczenia (tryb dynamiczny). Pola per język powstają z locales(), więc nowy język pojawi się tu sam. #}
+<dialog class="admin-modal" id="i18n-edit-modal">
+    <div class="admin-modal-card">
+        <header class="admin-modal-header">
+            <div>
+                <span class="admin-label" data-i18n-edit-key></span>
+                <h2>{{ tp('live.title') }}</h2>
+            </div>
+            <button class="admin-modal-close" type="button" aria-label="{{ tp('modal.close') }}" data-modal-close>×</button>
+        </header>
+        <form class="admin-form" data-i18n-edit-form>
+            {% for locale in locales() %}
+                <label for="i18n-edit-{{ locale }}">{{ tp('tr.col_' ~ locale) }}</label>
+                <textarea id="i18n-edit-{{ locale }}" name="{{ locale }}" rows="3" maxlength="{{ translation_max_length() }}"{% if not loop.first %} placeholder="{{ tp('tr.fallback') }}"{% endif %}></textarea>
+            {% endfor %}
+            <button type="submit">{{ tp('live.save') }}</button>
+        </form>
+    </div>
+</dialog>

@@ -1,0 +1,4 @@
+{# Odpowiedź na odświeżenie w tle: same części dynamiczne (statystyki i tablica). #}
+{% set view = filter.toQuery|url_encode %}
+{% include 'tasks/_stats.html.twig' %}
+{% include 'tasks/_board.html.twig' %}

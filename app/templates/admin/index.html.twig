@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% set breadcrumbs = ['nav.admin'] %}
+
+{% block title %}{{ t('admin.title') }}{% endblock %}
+
+{% block body %}
+    <main class="admin-page admin-users-page">
+        <header class="admin-header">
+            <div>
+                <span class="admin-label">{{ t('admin.label') }}</span>
+                <h1>{{ t('admin.heading') }}</h1>
+            </div>
+        </header>
+
+        <div class="admin-grid">
+            <section class="admin-panel admin-actions-panel">
+                <h2 class="admin-section-title">{{ t('admin.actions') }}</h2>
+                <div class="admin-action-list">
+                    {% for action in actions %}
+                        <a class="admin-action" href="{{ path(action.route) }}">
+                            <span class="admin-action-body">
+                                <strong>{{ t(action.title) }}</strong>
+                                <span>{{ t(action.text) }}</span>
+                            </span>
+                            {% if action.badge > 0 %}<span class="app-gear-badge">{{ action.badge }}</span>{% endif %}
+                            <span aria-hidden="true">↗</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock %}

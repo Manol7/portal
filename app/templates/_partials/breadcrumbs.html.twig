@@ -1,0 +1,19 @@
+{#
+  Okruszki. Strona potomna ustawia (poza blokami):
+    {% set breadcrumbs = ['nav.users'] %}   – klucze tekstów; ostatni to bieżąca strona
+    {% set breadcrumbs = [{label: 'nav.admin', route: 'app_admin'}, 'nav.users'] %}   – człon z własnym linkiem
+    {% set breadcrumbs_root = false %}      – bez członu "Portal" na początku (np. logowanie)
+  Brak ustawienia = tylko "Portal". Człon bez trasy prowadzi na stronę główną.
+#}
+{% set crumbs = ((breadcrumbs_root is defined ? breadcrumbs_root : true) ? ['nav.portal'] : [])|merge(breadcrumbs|default([])) %}
+<nav class="app-breadcrumbs" aria-label="{{ t('nav.aria') }}">
+    {% for crumb in crumbs %}
+        {% set label = crumb is iterable ? crumb.label : crumb %}
+        {% if loop.last %}
+            <span class="app-breadcrumb-current" aria-current="page">{{ t(label) }}</span>
+        {% else %}
+            <a href="{{ path(crumb is iterable ? crumb.route : 'app_home') }}">{{ t(label) }}</a>
+            <span class="app-breadcrumb-separator" aria-hidden="true">/</span>
+        {% endif %}
+    {% endfor %}
+</nav>

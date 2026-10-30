@@ -1,0 +1,20 @@
+{# Powiadomienia: komunikaty flash oraz błąd logowania. Kolejne typy dopisz w tablicy. #}
+{% macro toast(type, message) %}
+    <div class="app-toast app-toast--{{ type }}" role="{{ type == 'error' ? 'alert' : 'status' }}" data-toast>
+        <span class="app-toast-indicator" aria-hidden="true"></span>
+        <p>{{ message }}</p>
+        <button class="app-toast-close" type="button" aria-label="{{ t('toast.close') }}">×</button>
+        <span class="app-toast-timer" aria-hidden="true"></span>
+    </div>
+{% endmacro %}
+
+<section class="app-toasts" aria-label="{{ t('toast.aria') }}">
+    {% for type in ['success', 'error', 'warning', 'info'] %}
+        {% for message in app.flashes(type) %}
+            {{ _self.toast(type, message) }}
+        {% endfor %}
+    {% endfor %}
+    {% if error is defined and error %}
+        {{ _self.toast('error', t('login.error')) }}
+    {% endif %}
+</section>

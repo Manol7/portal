@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Security\Roles;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -83,7 +84,7 @@ final class CreateSuperAdminCommand extends Command
 
         $user = new User();
         $user->setEmail($email);
-        $user->setRoles(['ROLE_SUPER_ADMIN']);
+        $user->setRoles([Roles::SUPER_ADMIN]);
         $user->setPassword(
             $this->passwordHasher->hashPassword($user, $password)
         );

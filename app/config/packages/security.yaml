@@ -43,6 +43,8 @@ security:
     access_control:
         - { path: ^/login$, roles: PUBLIC_ACCESS }
         - { path: ^/logout$, roles: PUBLIC_ACCESS }
+        - { path: ^/locale/, roles: PUBLIC_ACCESS }
+        - { path: ^/contact$, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/, roles: ROLE_USER }
         # - { path: ^/admin, roles: ROLE_ADMIN }

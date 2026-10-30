@@ -1,0 +1,9 @@
+{# Przełącznik języka: pętla po Translations::LOCALES, flaga z _partials/flags/<język>.html.twig (brak flagi = kod języka). #}
+{% set active_locale = current_locale() %}
+<div class="app-lang" role="group">
+    {% for locale in locales() %}
+        <a class="app-lang-flag{{ locale == active_locale ? ' is-active' : '' }}" href="{{ path('app_locale', {locale: locale}) }}" lang="{{ locale }}" hreflang="{{ locale }}" title="{{ tp('lang.name_' ~ locale) }}" aria-label="{{ t('lang.to_' ~ locale) }}"{% if locale == active_locale %} aria-current="true"{% endif %}>
+            {% include '_partials/flags/' ~ locale ~ '.html.twig' ignore missing %}
+        </a>
+    {% endfor %}
+</div>

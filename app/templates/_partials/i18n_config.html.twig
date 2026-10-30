@@ -1,0 +1,20 @@
+{# Konfiguracja i teksty dla JavaScriptu. Moduły czytają ją przez modules/config.js. #}
+<script type="application/json" id="app-i18n">{{ {
+    texts: {
+        closeToast: tp('toast.close'),
+        roleFailed: tp('flash.role_failed'),
+        roleFailedRefresh: tp('flash.role_failed_refresh'),
+        liveEdit: tp('live.edit'),
+        liveError: tp('live.error'),
+        passwordMismatch: tp('form.password_mismatch'),
+        showPassword: tp('login.show'),
+        hidePassword: tp('login.hide'),
+        showPasswordAria: tp('login.show_aria'),
+        hidePasswordAria: tp('login.hide_aria'),
+    },
+    locale: current_locale(),
+    liveCookie: live_cookie(),
+    liveUrl: path('app_admin_translations_entry'),
+    liveToken: live_translate() ? csrf_token('save-translations') : '',
+    roles: roles()|reduce((carry, role) => carry|merge({(role): tp('role.' ~ role)}), {}),
+}|json_encode(15)|raw }}</script>

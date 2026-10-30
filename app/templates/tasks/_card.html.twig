@@ -1,0 +1,49 @@
+{# Karta zadania; oczekuje zmiennych: task, view, filter #}
+<article class="task-card is-{{ task.priority.value }}{{ task.overdue ? ' is-overdue' }}" data-task-id="{{ task.id }}" draggable="true"
+         data-task="{{ {
+             id: task.id,
+             title: task.title,
+             description: task.description,
+             status: task.status.value,
+             priority: task.priority.value,
+             due: task.dueDate ? task.dueDate|date('Y-m-d') : '',
+             tags: task.tags|join(', '),
+             subtasks: task.subtasks|map(s => s.title)|join("\n")
+         }|json_encode|e('html_attr') }}">
+    <header class="task-card-head">
+        <strong>{{ task.title }}</strong>
+        <span class="task-priority">{{ t(task.priority.textKey) }}</span>
+    </header>
+
+    {% if task.description %}<p class="task-description">{{ task.description }}</p>{% endif %}
+
+    {% if task.subtasks %}
+        <ul class="task-subtasks" data-subtasks data-subtask-url="{{ path('app_tasks_subtask', {id: task.id, index: 0}) }}">
+            {% for subtask in task.subtasks %}
+                <li><label><input type="checkbox" data-subtask-index="{{ loop.index0 }}"{{ subtask.done ? ' checked' }}> <span>{{ subtask.title }}</span></label></li>
+            {% endfor %}
+        </ul>
+        <span class="task-subtask-progress" data-subtask-progress>{{ task.subtasksDone }}/{{ task.subtasks|length }}</span>
+    {% endif %}
+
+    {% if task.tags %}
+        <div class="task-tags">
+            {% for tag in task.tags %}<a href="{{ path('app_tasks', filter.toQuery|merge({tag: tag})) }}">#{{ tag }}</a>{% endfor %}
+        </div>
+    {% endif %}
+
+    <footer class="task-card-foot">
+        {% if task.dueDate %}
+            <time class="task-due" datetime="{{ task.dueDate|date('Y-m-d') }}">{{ task.dueDate|date('Y-m-d') }}{% if task.overdue %} · {{ t('tasks.overdue') }}{% endif %}</time>
+        {% endif %}
+        {% if filter.allUsers %}<span class="task-owner">{{ task.owner.email }}</span>{% endif %}
+        <span class="task-actions">
+            <button class="admin-row-button" type="button" data-task-edit>{{ t('tasks.edit') }}</button>
+            <form method="post" action="{{ path('app_tasks_delete', {id: task.id}) }}" data-confirm="{{ tp('tasks.confirm_delete') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('tasks') }}">
+                <input type="hidden" name="view" value="{{ view }}">
+                <button class="admin-row-button is-danger" type="submit">{{ t('tasks.delete') }}</button>
+            </form>
+        </span>
+    </footer>
+</article>

@@ -1,55 +1,160 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Użytkownicy — Portal{% endblock %}
+{% set breadcrumbs = [{label: 'nav.admin', route: 'app_admin'}, 'nav.users'] %}
+
+{% block title %}{{ t('users.title') }}{% endblock %}
 
 {% block body %}
-    <main style="max-width: 900px; margin: 40px auto; padding: 20px;">
-        <p><a href="{{ path('app_home') }}">← Powrót do portalu</a></p>
 
-        <h1>Użytkownicy</h1>
+    <main class="admin-page admin-users-page">
+        <header class="admin-header">
+            <div>
+                <span class="admin-label">{{ t('users.label') }}</span>
+                <h1>{{ t('users.heading') }}</h1>
+            </div>
+        </header>
 
-        {% for message in app.flashes('success') %}
-            <p role="status">{{ message }}</p>
-        {% endfor %}
+        <div class="admin-grid">
+            <section class="admin-panel admin-users-table-panel">
+                <div class="admin-table-toolbar">
+                    <h2>{{ t('users.table_title') }}</h2>
+                    <div class="admin-search">
+                        <input type="search" placeholder="{{ t('users.search_placeholder') }}" aria-label="{{ t('users.search_aria') }}" autocomplete="off" data-user-search>
+                    </div>
+                    <div class="admin-table-toolbar-actions">
+                        <span>{{ t('users.count', {count: users|length}) }}</span>
+                        <button class="admin-add-button" type="button" aria-label="{{ t('users.add_aria') }}" data-modal-open="create-user-modal">+</button>
+                    </div>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>{{ t('users.col_id') }}</th>
+                            <th>{{ t('users.col_email') }}</th>
+                            <th>{{ t('users.col_role') }}</th>
+                            <th class="admin-actions-cell">{{ t('users.col_actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            {% set user_role = primary_role(user) %}
+                            {% set role_label = tp('role.' ~ user_role) %}
+                            {% set can_manage = can_manage(user) %}
+                            <tr data-user-row data-id="{{ user.id }}" data-email="{{ user.email|lower }}" data-role-label="{{ role_label|lower }}">
+                                <td>{{ user.id }}</td>
+                                <td class="admin-email-cell" data-id="{{ user.id }}" data-label="{{ t('users.col_email') }}">
+                                    <span>{{ user.email }}</span>
+                                </td>
+                                <td data-label="{{ t('users.col_role') }}">
+                                    {% if app.user != user and can_manage %}
+                                        <form class="admin-role-form" action="{{ path('app_admin_users_role', {id: user.id}) }}" method="post" data-role-form>
+                                            <input type="hidden" name="_token" value="{{ csrf_token('update-user-role-' ~ user.id) }}">
+                                            <select class="admin-role-select" name="role" aria-label="{{ t('users.role_aria', {email: user.email}) }}" data-role-select data-current-role="{{ user_role }}"{% if live_translate() %} data-i18n-key="role.{{ user_role }}"{% endif %}>
+                                                <option value="" selected disabled hidden>{{ role_label }}</option>
+                                                {% for role in grantable_roles %}
+                                                    {% if role != user_role %}
+                                                        <option value="{{ role }}">{{ t('role.' ~ role) }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </form>
+                                    {% else %}
+                                        <span class="admin-role-static">{{ t('role.' ~ user_role) }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="admin-actions-cell" data-label="{{ t('users.col_actions') }}">
+                                    <div class="admin-row-actions">
+                                        {% if can_manage %}
+                                        <button
+                                            class="admin-row-button"
+                                            type="button"
+                                            data-edit-open
+                                            data-edit-action="{{ path('app_admin_users_update', {id: user.id}) }}"
+                                            data-edit-token="{{ csrf_token('edit-user-' ~ user.id) }}"
+                                            data-edit-email="{{ user.email }}"
+                                        >{{ t('users.edit') }}</button>
+                                        {% endif %}
+                                        {% if app.user != user and can_manage %}
+                                            <button
+                                                class="admin-row-button is-danger"
+                                                type="button"
+                                                data-delete-open
+                                                data-delete-action="{{ path('app_admin_users_delete', {id: user.id}) }}"
+                                                data-delete-token="{{ csrf_token('delete-user-' ~ user.id) }}"
+                                                data-delete-email="{{ user.email }}"
+                                            >{{ t('users.delete') }}</button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4">{{ t('users.none') }}</td></tr>
+                        {% endfor %}
+                        <tr data-search-empty hidden><td colspan="4">{{ t('users.no_results') }}</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>E-mail</th>
-                    <th>Rola</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                    <tr>
-                        <td>{{ user.id }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>
-                            {% if 'ROLE_SUPER_ADMIN' in user.roles %}
-                                Superadministrator
-                            {% elseif 'ROLE_ADMIN' in user.roles %}
-                                Administrator
-                            {% else %}
-                                Użytkownik
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="3">Brak użytkowników.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <dialog class="admin-modal" id="create-user-modal" data-open-on-load="{{ show_create_modal ? 'true' : 'false' }}">
+            <div class="admin-modal-card">
+                <header class="admin-modal-header">
+                    <div>
+                        <span class="admin-label">{{ t('create.label') }}</span>
+                        <h2>{{ t('create.title') }}</h2>
+                    </div>
+                    <button class="admin-modal-close" type="button" aria-label="{{ t('modal.close') }}" data-modal-close>×</button>
+                </header>
+                <div class="admin-form">
+                    {{ form_start(form) }}
+                        {{ form_errors(form) }}
+                        {{ form_row(form.email) }}
+                        {{ form_row(form.role) }}
+                        {{ form_row(form.plainPassword) }}
+                        <button type="submit">{{ t('create.submit') }}</button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </dialog>
 
-        <h2>Nowe konto</h2>
+        <dialog class="admin-modal admin-confirm-modal" id="delete-user-modal">
+            <div class="admin-modal-card">
+                <header class="admin-modal-header">
+                    <div>
+                        <span class="admin-label">{{ t('delete.label') }}</span>
+                        <h2>{{ t('delete.title') }}</h2>
+                        <p class="admin-modal-description">{{ t('delete.text_before') }} <strong data-delete-email-label></strong> {{ t('delete.text_after') }}</p>
+                    </div>
+                    <button class="admin-modal-close" type="button" aria-label="{{ t('modal.close') }}" data-modal-close>×</button>
+                </header>
+                <form class="admin-confirm-actions" method="post" data-delete-form>
+                    <input type="hidden" name="_token" data-delete-token>
+                    <button class="admin-confirm-cancel" type="button" data-modal-close>{{ t('delete.cancel') }}</button>
+                    <button class="admin-confirm-delete" type="submit">{{ t('delete.confirm') }}</button>
+                </form>
+            </div>
+        </dialog>
 
-        {{ form_start(form) }}
-            {{ form_errors(form) }}
-            {{ form_row(form.email) }}
-            {{ form_row(form.role) }}
-            {{ form_row(form.plainPassword) }}
-
-            <button type="submit">Utwórz konto</button>
-        {{ form_end(form) }}
+        <dialog class="admin-modal" id="edit-user-modal">
+            <div class="admin-modal-card">
+                <header class="admin-modal-header">
+                    <div>
+                        <span class="admin-label">{{ t('edit.label') }}</span>
+                        <h2>{{ t('edit.title') }}</h2>
+                    </div>
+                    <button class="admin-modal-close" type="button" aria-label="{{ t('modal.close') }}" data-modal-close>×</button>
+                </header>
+                <form class="admin-form" method="post" data-edit-form>
+                    <input type="hidden" name="_token" data-edit-token>
+                    <label for="edit-email">{{ t('edit.email') }}</label>
+                    <input id="edit-email" type="email" name="email" maxlength="{{ account_rules().email_max }}" autocomplete="off" required>
+                    <label for="edit-password">{{ t('edit.password') }}</label>
+                    <input id="edit-password" type="password" name="password" minlength="{{ account_rules().password_min }}" maxlength="{{ account_rules().password_max }}" autocomplete="new-password">
+                    <label for="edit-password-confirmation">{{ t('edit.password_confirm') }}</label>
+                    <input id="edit-password-confirmation" type="password" name="password_confirmation" minlength="{{ account_rules().password_min }}" maxlength="{{ account_rules().password_max }}" autocomplete="new-password">
+                    <button type="submit">{{ t('edit.submit') }}</button>
+                </form>
+            </div>
+        </dialog>
     </main>
 {% endblock %}

@@ -1,38 +1,61 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
+{% set breadcrumbs = ['nav.login'] %}
+{% set breadcrumbs_root = false %}
+
+{% block title %}{{ t('login.title') }}{% endblock %}
 
 {% block body %}
-    <form method="post">
-        {% if error %}
-            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-        {% endif %}
 
-        {% if app.user %}
-            <div class="mb-3">
-                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">Logout</a>
+    <main class="login-shell">
+        <section class="login-visual" aria-label="{{ t('login.hero_aria') }}">
+            <div class="hero-copy">
+                <span class="eyebrow">{{ t('login.hero_label') }}</span>
+                <h1>{{ t('login.hero_title')|nl2br }}</h1>
+                <p>{{ t('login.hero_text') }}</p>
             </div>
-        {% endif %}
+        </section>
 
-        <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-        <label for="username">Email</label>
-        <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
-        <label for="password">Password</label>
-        <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
-        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+        <section class="login-panel">
+            <div class="login-card">
+                <span class="eyebrow">{{ t('login.label') }}</span>
+                <h2>{{ t('login.heading') }}</h2>
+                <p class="login-intro">{{ t('login.intro') }}</p>
 
-        {#
-            Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
-            See https://symfony.com/doc/current/security/remember_me.html
+                {% if app.user %}
+                    <div class="logged-in">
+                        {{ t('login.logged_as', {user: app.user.userIdentifier}) }}
+                        <a href="{{ logout_path() }}">{{ t('login.logout') }}</a>
+                    </div>
+                {% endif %}
 
-            <div class="checkbox mb-3">
-                <input type="checkbox" name="_remember_me" id="_remember_me">
-                <label for="_remember_me">Remember me</label>
+                <form method="post">
+                    <div class="field">
+                        <label for="username">{{ t('login.email') }}</label>
+                        <input type="email" value="{{ last_username }}" name="_username" id="username" autocomplete="email" required autofocus>
+                    </div>
+
+                    <div class="field">
+                        <label for="password">{{ t('login.password') }}</label>
+                        <div class="input-wrap">
+                            <input type="password" name="_password" id="password" autocomplete="current-password" required>
+                            <button class="password-toggle" type="button" aria-label="{{ t('login.show_aria') }}" data-password-toggle>{{ t('login.show') }}</button>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+                    <button class="submit-button" type="submit">
+                        <span>{{ t('login.submit') }}</span>
+                        <span aria-hidden="true">↗</span>
+                    </button>
+                </form>
+
+                <div class="login-meta">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    <span>{{ t('login.secure') }}</span>
+                </div>
             </div>
-        #}
-
-        <button class="btn btn-lg btn-primary" type="submit">
-            Sign in
-        </button>
-    </form>
+        </section>
+    </main>
 {% endblock %}

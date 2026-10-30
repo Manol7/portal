@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% set breadcrumbs = [{label: 'nav.admin', route: 'app_admin'}, 'nav.translations'] %}
+
+{% block title %}{{ t('tr.title') }}{% endblock %}
+
+{% block body %}
+
+    <main class="admin-page admin-users-page">
+        <header class="admin-header">
+            <div>
+                <span class="admin-label">{{ t('tr.label') }}</span>
+                <h1>{{ t('tr.heading') }}</h1>
+            </div>
+        </header>
+
+        <div class="admin-grid">
+            <form class="admin-panel admin-users-table-panel admin-i18n" method="post">
+                <input type="hidden" name="_token" value="{{ csrf_token('save-translations') }}">
+                <div class="admin-table-toolbar">
+                    <h2>{{ t('nav.translations') }}</h2>
+                    <div class="admin-search">
+                        <input type="search" placeholder="{{ t('tr.search') }}" aria-label="{{ t('tr.search') }}" autocomplete="off" data-translation-search>
+                    </div>
+                </div>
+
+                <div class="admin-i18n-scroll">
+                <table class="admin-i18n-table">
+                    <thead>
+                        <tr>
+                            <th>{{ t('tr.col_key') }}</th>
+                            {% for locale in locales() %}
+                                <th>{{ t('tr.col_' ~ locale) }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                            <tr data-translation-row data-search="{{ (entry.key ~ ' ' ~ entry.values|join(' '))|lower }}">
+                                <td class="admin-i18n-key">{{ entry.key }}</td>
+                                {% for locale in locales() %}
+                                    <td data-label="{{ t('tr.col_' ~ locale) }}">
+                                        {% set placeholder = loop.first ? '' : tp('tr.fallback') %}
+                                        {% if entry.multiline %}
+                                            <textarea name="{{ locale }}[{{ entry.key }}]" rows="2" maxlength="{{ translation_max_length() }}" placeholder="{{ placeholder }}">{{ entry.values[locale] }}</textarea>
+                                        {% else %}
+                                            <input type="text" name="{{ locale }}[{{ entry.key }}]" value="{{ entry.values[locale] }}" maxlength="{{ translation_max_length() }}" placeholder="{{ placeholder }}">
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        <tr data-translation-empty hidden><td colspan="{{ locales()|length + 1 }}">{{ t('tr.no_results') }}</td></tr>
+                    </tbody>
+                </table>
+                </div>
+
+                <div class="admin-i18n-footer">
+                    <button class="admin-i18n-save" type="submit">{{ t('tr.save') }}</button>
+                </div>
+            </form>
+        </div>
+    </main>
+{% endblock %}

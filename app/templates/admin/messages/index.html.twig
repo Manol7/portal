@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% set breadcrumbs = [{label: 'nav.admin', route: 'app_admin'}, 'nav.messages'] %}
+
+{% block title %}{{ t('messages.title') }}{% endblock %}
+
+{% block body %}
+    <main class="admin-page admin-users-page">
+        <header class="admin-header">
+            <div>
+                <span class="admin-label">{{ t('messages.label') }}</span>
+                <h1>{{ t('messages.heading') }}</h1>
+            </div>
+        </header>
+
+        <div class="admin-grid">
+        <section class="admin-panel admin-users-table-panel">
+            <div class="admin-table-toolbar">
+                <h2>{{ t('messages.table_title') }}</h2>
+                <div class="admin-table-toolbar-actions">
+                    <span>{{ t('messages.count', {count: messages|length}) }}</span>
+                </div>
+            </div>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>{{ t('messages.col_date') }}</th>
+                        <th>{{ t('messages.col_from') }}</th>
+                        <th>{{ t('messages.col_subject') }}</th>
+                        <th class="admin-actions-cell">{{ t('users.col_actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for message in messages %}
+                        <tr class="{{ message.read ? '' : 'is-unread' }}">
+                            <td data-label="{{ tp('messages.col_date') }}">{{ message.createdAt|date('Y-m-d H:i') }}</td>
+                            <td data-label="{{ tp('messages.col_from') }}"><a href="mailto:{{ message.email }}">{{ message.email }}</a></td>
+                            <td data-label="{{ tp('messages.col_subject') }}">
+                                {% if not message.read %}<span class="message-dot" title="{{ tp('messages.unread') }}"></span>{% endif %}
+                                {{ message.subject }}
+                            </td>
+                            <td class="admin-actions-cell" data-label="{{ tp('users.col_actions') }}">
+                                <div class="admin-row-actions">
+                                    <button class="admin-row-button" type="button" data-modal-open="message-{{ message.id }}">{{ t('messages.open') }}</button>
+                                    <form method="post" action="{{ path('app_admin_messages_delete', {id: message.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-message-' ~ message.id) }}">
+                                        <button class="admin-row-button is-danger" type="submit">{{ t('users.delete') }}</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4">{{ t('messages.none') }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        </div>
+
+        {% for message in messages %}
+            <dialog class="admin-modal" id="message-{{ message.id }}">
+                <div class="admin-modal-card">
+                    <header class="admin-modal-header">
+                        <div>
+                            <span class="admin-label">{{ message.createdAt|date('Y-m-d H:i') }} · {{ message.locale|upper }}</span>
+                            <h2>{{ message.subject }}</h2>
+                            <p class="admin-modal-description"><a href="mailto:{{ message.email }}">{{ message.email }}</a></p>
+                        </div>
+                        <button class="admin-modal-close" type="button" aria-label="{{ tp('modal.close') }}" data-modal-close>×</button>
+                    </header>
+                    <p class="message-body">{{ message.message }}</p>
+                    <form class="admin-confirm-actions" method="post" action="{{ path('app_admin_messages_read', {id: message.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('read-message-' ~ message.id) }}">
+                        <input type="hidden" name="read" value="{{ message.read ? '0' : '1' }}">
+                        <button class="admin-confirm-cancel" type="submit">{{ t(message.read ? 'messages.mark_unread' : 'messages.mark_read') }}</button>
+                    </form>
+                </div>
+            </dialog>
+        {% endfor %}
+    </main>
+{% endblock %}

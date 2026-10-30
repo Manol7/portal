@@ -1,0 +1,107 @@
+{% extends 'base.html.twig' %}
+
+{% set breadcrumbs = ['nav.tasks'] %}
+
+{% block title %}{{ t('tasks.title') }}{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ public_asset('styles/tasks.css') }}">
+{% endblock %}
+
+{% block body %}
+    {% set view = filter.toQuery|url_encode %}
+    <main class="admin-page admin-users-page tasks-page">
+        <header class="admin-header">
+            <div>
+                <span class="admin-label">{{ t('tasks.label') }}</span>
+                <h1>{{ t('tasks.heading') }}</h1>
+            </div>
+            <button class="tasks-new" type="button" data-task-new data-modal-open="task-dialog">{{ t('tasks.new') }}</button>
+        </header>
+
+        {% include 'tasks/_stats.html.twig' %}
+
+        <form class="tasks-toolbar" method="get" action="{{ path('app_tasks') }}" data-tasks-filters>
+            <input type="search" name="q" value="{{ filter.query }}" placeholder="{{ tp('tasks.search') }}" aria-label="{{ tp('tasks.search') }}" maxlength="100">
+            <select name="priority" aria-label="{{ tp('tasks.priority') }}">
+                <option value="">{{ tp('tasks.priority') }}: {{ tp('tasks.any') }}</option>
+                {% for p in priorities %}
+                    <option value="{{ p.value }}"{{ filter.priority == p ? ' selected' }}>{{ tp(p.textKey) }}</option>
+                {% endfor %}
+            </select>
+            <select name="tag" aria-label="{{ tp('tasks.tags') }}">
+                <option value="">{{ tp('tasks.tags') }}: {{ tp('tasks.any') }}</option>
+                {% for tag in stats.tags %}
+                    <option value="{{ tag }}"{{ filter.tag == tag ? ' selected' }}>#{{ tag }}</option>
+                {% endfor %}
+            </select>
+            <select name="due" aria-label="{{ tp('tasks.due') }}">
+                <option value="">{{ tp('tasks.due') }}: {{ tp('tasks.any') }}</option>
+                {% for option in due_options %}
+                    <option value="{{ option }}"{{ filter.due == option ? ' selected' }}>{{ tp('tasks.due.' ~ option) }}</option>
+                {% endfor %}
+            </select>
+            <select name="sort" aria-label="{{ tp('tasks.sort') }}">
+                {% for sort in sorts %}
+                    <option value="{{ sort }}"{{ filter.sort == sort ? ' selected' }}>{{ tp('tasks.sort') }}: {{ tp('tasks.sort.' ~ sort) }}</option>
+                {% endfor %}
+            </select>
+            {% if is_granted('ROLE_ADMIN') %}
+                <label class="tasks-scope"><input type="checkbox" name="scope" value="all"{{ filter.allUsers ? ' checked' }}> <span>{{ t('tasks.scope_all') }}</span></label>
+            {% endif %}
+            <button class="tasks-reset" type="button" data-tasks-reset{% if not (filter.active or filter.allUsers or filter.sort != 'manual') %} hidden{% endif %}>{{ t('tasks.reset') }}</button>
+        </form>
+
+        {% include 'tasks/_board.html.twig' %}
+
+        <dialog class="admin-modal" id="task-dialog">
+            <div class="admin-modal-card">
+                <header class="admin-modal-header">
+                    <div>
+                        <span class="admin-label">{{ t('tasks.label') }}</span>
+                        <h2 data-task-dialog-title data-title-new="{{ tp('tasks.new') }}" data-title-edit="{{ tp('tasks.edit') }}">{{ t('tasks.new') }}</h2>
+                    </div>
+                    <button class="admin-modal-close" type="button" aria-label="{{ tp('modal.close') }}" data-modal-close>×</button>
+                </header>
+                <form class="admin-form tasks-form" method="post" action="{{ path('app_tasks_save') }}" data-task-form>
+                    <input type="hidden" name="_token" value="{{ csrf_token('tasks') }}">
+                    <input type="hidden" name="view" value="{{ view }}">
+                    <input type="hidden" name="id" value="">
+
+                    <label for="task-title">{{ t('tasks.field.title') }}</label>
+                    <input id="task-title" type="text" name="title" maxlength="{{ limits.title }}" required autocomplete="off">
+
+                    <label for="task-description">{{ t('tasks.field.description') }}</label>
+                    <textarea id="task-description" name="description" rows="3" maxlength="{{ limits.description }}"></textarea>
+
+                    <div class="tasks-form-row">
+                        <div>
+                            <label for="task-status">{{ t('tasks.field.status') }}</label>
+                            <select id="task-status" name="status">
+                                {% for status in statuses %}<option value="{{ status.value }}">{{ tp(status.textKey) }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="task-priority">{{ t('tasks.priority') }}</label>
+                            <select id="task-priority" name="priority">
+                                {% for p in priorities %}<option value="{{ p.value }}"{{ p.value == 'medium' ? ' selected' }}>{{ tp(p.textKey) }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="task-due">{{ t('tasks.due') }}</label>
+                            <input id="task-due" type="date" name="due">
+                        </div>
+                    </div>
+
+                    <label for="task-tags">{{ t('tasks.tags') }}</label>
+                    <input id="task-tags" type="text" name="tags" placeholder="{{ tp('tasks.tags_hint') }}" autocomplete="off">
+
+                    <label for="task-subtasks">{{ t('tasks.subtasks') }}</label>
+                    <textarea id="task-subtasks" name="subtasks" rows="3" placeholder="{{ tp('tasks.subtasks_hint') }}"></textarea>
+
+                    <button type="submit">{{ t('tasks.save') }}</button>
+                </form>
+            </div>
+        </dialog>
+    </main>
+{% endblock %}

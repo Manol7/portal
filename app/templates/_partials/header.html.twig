@@ -1,0 +1,24 @@
+<header class="app-header">
+    <div class="app-frame app-header-inner">
+        <div class="app-header-start">
+            <a class="app-brand" href="{{ path('app_home') }}">
+                <span class="app-brand-mark" aria-hidden="true">KM</span>
+                <span>Kamil Mańkowski</span>
+            </a>
+            {% include '_partials/breadcrumbs.html.twig' %}
+        </div>
+        <div class="app-header-user">
+            {% include '_partials/language_switcher.html.twig' %}
+            <a class="app-header-link" href="{{ path('app_contact') }}">{{ t('nav.contact') }}</a>
+            {% if is_granted('ROLE_ADMIN') %}
+                {% include '_partials/admin_menu.html.twig' %}
+            {% endif %}
+            {% if app.user %}
+                <span class="app-header-identity">{{ app.user.userIdentifier }}</span>
+                <a href="{{ path('app_logout') }}">{{ t('header.logout') }}</a>
+            {% elseif app.request.attributes.get('_route') != 'app_login' %}
+                <a href="{{ path('app_login') }}">{{ t('header.login') }}</a>
+            {% endif %}
+        </div>
+    </div>
+</header>

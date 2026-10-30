@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% set breadcrumbs = ['nav.error'] %}
+
+{% set code = status|default(status_code|default(500)) %}
+{% set kind = code == 404 or code == 403 ? code : 500 %}
+
+{% block title %}{{ code }} — {{ t('error.' ~ kind ~ '.title') }}{% endblock %}
+
+{% block body %}
+    <main class="error-page">
+        <span class="error-code" aria-hidden="true">{{ code }}</span>
+        <h1>{{ t('error.' ~ kind ~ '.title') }}</h1>
+        <p>{{ t('error.' ~ kind ~ '.text') }}</p>
+        <a class="error-home" href="{{ path('app_home') }}">{{ t('error.home') }}</a>
+    </main>
+{% endblock %}

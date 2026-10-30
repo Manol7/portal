@@ -1,0 +1,28 @@
+{# Odświeżana dynamicznie część strony: wymaga zmiennych filter, columns, statuses, stats, shown, view. #}
+<div class="tasks-live" data-live-part="board"
+     data-token="{{ csrf_token('tasks') }}"
+     data-reorder-url="{{ path('app_tasks_reorder') }}"
+     data-tags="{{ stats.tags|json_encode|e('html_attr') }}"
+     data-filtered="{{ (filter.active or filter.allUsers or filter.sort != 'manual') ? '1' : '0' }}">
+    {% if filter.active %}
+        <p class="admin-hint">{{ t('tasks.shown', {shown: shown, total: stats.total}) }}</p>
+    {% endif %}
+
+    <div class="tasks-board" data-tasks-board data-sortable="{{ filter.sort == 'manual' and not filter.allUsers ? 'true' : 'false' }}">
+        {% for status in statuses %}
+            <section class="tasks-column" data-status="{{ status.value }}">
+                <h2 class="tasks-column-title">
+                    <span>{{ t(status.textKey) }}</span>
+                    <span class="tasks-count">{{ columns[status.value]|length }}</span>
+                </h2>
+                <div class="tasks-list" data-dropzone>
+                    {% for task in columns[status.value] %}
+                        {% include 'tasks/_card.html.twig' %}
+                    {% else %}
+                        <p class="tasks-empty">{{ t('tasks.empty') }}</p>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+</div>

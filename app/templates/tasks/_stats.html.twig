@@ -1,0 +1,10 @@
+<section class="tasks-stats" data-live-part="stats" aria-label="{{ tp('tasks.stats') }}">
+    <div class="tasks-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ stats.percent }}">
+        <span style="width: {{ stats.percent }}%"></span>
+    </div>
+    <dl>
+        <div><dt>{{ t('tasks.stats.total') }}</dt><dd>{{ stats.total }}</dd></div>
+        <div><dt>{{ t('tasks.stats.done') }}</dt><dd>{{ stats.done }} <small>({{ stats.percent }}%)</small></dd></div>
+        <div class="{{ stats.overdue > 0 ? 'is-alert' : '' }}"><dt>{{ t('tasks.stats.overdue') }}</dt><dd>{{ stats.overdue }}</dd></div>
+    </dl>
+</section>

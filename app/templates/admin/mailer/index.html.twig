@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% set breadcrumbs = [{label: 'nav.admin', route: 'app_admin'}, 'nav.mailer'] %}
+
+{% block title %}{{ t('mailer.title') }}{% endblock %}
+
+{% block body %}
+    <main class="admin-page admin-users-page">
+        <header class="admin-header">
+            <div>
+                <span class="admin-label">{{ t('mailer.label') }}</span>
+                <h1>{{ t('mailer.heading') }}</h1>
+            </div>
+        </header>
+
+        <div class="admin-grid admin-dashboard">
+            <section class="admin-panel">
+                <h2 class="admin-section-title">{{ t('mailer.settings') }}</h2>
+                <form class="admin-form" method="post" action="{{ path('app_admin_mailer_save') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('mailer-settings') }}">
+
+                    <label for="mailer-dsn">{{ t('mailer.dsn') }}</label>
+                    <input id="mailer-dsn" type="text" name="dsn" value="" placeholder="{{ dsn_masked }}" autocomplete="off" spellcheck="false">
+                    <p class="admin-hint">{{ t(dsn_custom ? 'mailer.dsn_hint_db' : 'mailer.dsn_hint_env') }}</p>
+                    {% if dsn_custom %}
+                        <label class="admin-check"><input type="checkbox" name="dsn_reset" value="1"> <span>{{ t('mailer.dsn_reset', {dsn: dsn_default_masked}) }}</span></label>
+                    {% endif %}
+
+                    <label for="mailer-from">{{ t('mailer.from') }}</label>
+                    <input id="mailer-from" type="email" name="from" value="{{ from }}" maxlength="{{ email_max }}" autocomplete="off" required>
+
+                    <label for="mailer-from-name">{{ t('mailer.from_name') }}</label>
+                    <input id="mailer-from-name" type="text" name="from_name" value="{{ from_name }}" maxlength="{{ from_name_max }}" autocomplete="off">
+
+                    <label for="mailer-recipients">{{ t('mailer.recipients') }}</label>
+                    <textarea id="mailer-recipients" name="recipients" rows="4" required>{{ recipients }}</textarea>
+                    <p class="admin-hint">{{ t('mailer.recipients_hint') }}</p>
+
+                    <button type="submit">{{ t('admin.settings.save') }}</button>
+                </form>
+            </section>
+
+            <section class="admin-panel">
+                <h2 class="admin-section-title">{{ t('mailer.test') }}</h2>
+                <p class="admin-hint">{{ t('mailer.test_hint') }}</p>
+                <form class="admin-form" method="post" action="{{ path('app_admin_mailer_test') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('mailer-test') }}">
+                    <button type="submit">{{ t('mailer.test_send') }}</button>
+                </form>
+            </section>
+        </div>
+    </main>
+{% endblock %}

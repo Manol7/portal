@@ -37,13 +37,21 @@ portal/
 ├── app/                       # aplikacja Symfony
 │   ├── config/                # konfiguracja, w tym security.yaml
 │   ├── migrations/            # wersjonowane zmiany struktury bazy
+│   ├── public/
+│   │   ├── scripts/           # app.js (wejście) + modules/ (moduły ES per funkcja)
+│   │   └── styles/app.css     # arkusz stylów
 │   ├── src/
+│   │   ├── Account/           # reguły pól konta i walidacja edycji
 │   │   ├── Command/           # polecenia konsolowe aplikacji
 │   │   ├── Controller/        # obsługa stron i żądań
 │   │   ├── Entity/            # encje Doctrine, np. User
+│   │   ├── EventSubscriber/   # język, strony błędów, komunikat po logowaniu
 │   │   ├── Form/              # formularze, np. CreateUserType
-│   │   └── Repository/        # pobieranie encji z bazy
-│   ├── templates/             # szablony Twig
+│   │   ├── Repository/        # pobieranie encji z bazy
+│   │   ├── Security/          # Roles (lista ról) i UserPermissions (kto kim zarządza)
+│   │   ├── Translation/       # DefaultTexts, Translations, tryb dynamicznego tłumaczenia
+│   │   └── Twig/              # funkcje Twig (zasoby, role, limity)
+│   ├── templates/             # szablony Twig; _partials/ to części szkieletu strony
 │   ├── var/                   # cache i logi, poza Git
 │   └── vendor/                # biblioteki Composer, poza Git
 ├── docker/
@@ -264,9 +272,38 @@ Reguły `access_control` są sprawdzane od góry i stosowana jest pierwsza pasuj
 - `/admin` wymaga `ROLE_ADMIN`.
 - Pozostałe adresy wymagają `ROLE_USER`.
 
-Panel `/admin/users` ma dodatkowe zabezpieczenie kontrolera `#[IsGranted('ROLE_SUPER_ADMIN')]`. Dzięki temu sam administrator nie może zarządzać kontami.
+Panel `/admin/users` jest dostępny dla administratorów, ale reguły „kto kim zarządza” są w jednym miejscu: `app/src/Security/UserPermissions.php`. Administrator nie widzi i nie może nadać ani edytować roli superadministratora. Lista ról to `app/src/Security/Roles.php`; nowa rola wymaga wpisu tam, w hierarchii `security.yaml` i tekstu `role.<ROLA>` w `DefaultTexts`.
 
-Hasła są hashowane przez Symfony. Formularz tworzenia kont sprawdza adres e-mail, jego unikalność, długość hasła oraz zgodność powtórzonego hasła. Nowe konta mogą otrzymać rolę użytkownika lub administratora; konto superadministratora tworzymy poleceniem konsolowym.
+Hasła są hashowane przez Symfony. Formularz tworzenia kont sprawdza adres e-mail, jego unikalność, długość hasła oraz zgodność powtórzonego hasła (limity w `app/src/Account/AccountRules.php`). Rolę nowego konta wybiera się spośród tych, które zalogowany użytkownik może nadać; konto superadministratora można też utworzyć poleceniem konsolowym.
+
+## Tłumaczenia
+
+Wszystkie teksty mają klucze w `app/src/Translation/DefaultTexts.php` (polski). Języki wymienia stała `Translations::LOCALES` (pierwszy jest domyślny). Nowy język: dopisz kod do `LOCALES`, dodaj flagę `templates/_partials/flags/<kod>.html.twig` oraz teksty `lang.name_<kod>`, `lang.to_<kod>` i `tr.col_<kod>`. Przełącznik, strona `/admin/translations` i okno dynamicznego tłumaczenia budują się z tej listy automatycznie. Nowy tekst wystarczy dopisać do `DefaultTexts`.
+
+Breadcrumbs ustawia szablon strony: `{% set breadcrumbs = ['nav.klucz'] %}` (opcjonalnie `{% set breadcrumbs_root = false %}`).
+
+## Panel administratora
+
+`/admin` (ROLE_ADMIN) zawiera listę akcji (użytkownicy, tłumaczenia, wiadomości, ustawienia mailera). Nowa akcja: wpis w `App\Admin\AdminActions::list()`. Ustawienia są w bazie (tabela `setting`, serwis `App\Settings\Settings`); nowe ustawienie = stała i metoda w `Settings`. Menu zębatki zawiera tylko live translate i link do panelu. Okruszki podstron admina linkują do panelu: `{% set breadcrumbs = [{label: 'nav.admin', route: 'app_admin'}, 'nav.klucz'] %}`.
+
+## Zadania
+
+`/tasks` (każdy zalogowany) to tablica kanban: statusy z `App\Task\TaskStatus` (do zrobienia / w toku / zrobione), priorytety (`TaskPriority`), termin z oznaczaniem przeterminowanych, tagi, podzadania (checklista w JSON), opis, pasek postępu oraz filtry, wyszukiwanie i sortowanie (`TaskFilter`, parametry w URL). Zadania są prywatne; administrator może przełączyć widok na zadania wszystkich (`?scope=all`) i nimi zarządzać. Karty przeciąga się między kolumnami (zapis przez `POST /tasks/reorder`; przeciąganie działa przy sortowaniu ręcznym i własnych zadaniach). Strona odświeża się dynamicznie: filtry, wyszukiwanie (z opóźnieniem 250 ms) i sortowanie działają bez przycisku i bez przeładowania (adres w pasku jest aktualizowany, więc widok można odświeżyć lub udostępnić), a zapis, usunięcie, odhaczenie podzadania i przeciągnięcie podmieniają statystyki i tablicę (`GET /tasks?partial=1` z bieżącymi filtrami, części oznaczone `data-live-part`). Dodatkowo w tle widok odświeża się co 8 s (pomijane przy otwartym oknie edycji, przeciąganiu i ukrytej karcie), więc zmiany z innej karty lub konta są widoczne bez akcji użytkownika. Walidację formularza robi `TaskInputMapper`, logika w `TaskController`, front w `public/scripts/modules/tasks.js` i `public/styles/tasks.css`. Nowy status lub priorytet: case w enumie i teksty `tasks.status.*` / `tasks.priority.*`.
+
+## Mailing i kontakt
+
+Wysyłką maili zajmuje się Symfony Mailer (`App\Mail\MailerFactory` buduje transport z ustawień). Wszystko konfiguruje się w `/admin/mailer`: DSN, adres i nazwa nadawcy, odbiorcy (do 10) oraz próbny mail. DSN jest zapisywany szyfrowany (sodium, klucz z `APP_SECRET` — po zmianie sekretu trzeba wpisać DSN ponownie) i nigdy nie jest pokazywany w całości; puste pole zostawia obecny, checkbox przywraca domyślny. Zmienne środowiskowe (przez `compose.yaml`, wzór w `.env.example`) są tylko wartościami domyślnymi:
+
+| Zmienna | Znaczenie |
+|---|---|
+| `MAILER_DSN` | transport; domyślnie `null://null` (nic nie wysyła), produkcyjnie np. `smtp://user:haslo@smtp.example.com:587` |
+| `MAILER_FROM` | adres nadawcy; musi być zgodny z domeną/kontem SMTP |
+| `CONTACT_RECIPIENT` | domyślny odbiorca wiadomości z formularza; ustawienie w `/admin/mailer` ma pierwszeństwo |
+| `COMPOSE_PROFILES` | `dev` uruchamia lokalnie Mailpit |
+
+Lokalnie w `.env`: `COMPOSE_PROFILES=dev` i `MAILER_DSN=smtp://mailpit:1025`. Wszystkie wysłane maile są wtedy widoczne w Mailpit pod `http://localhost:8025` i nigdzie nie wychodzą.
+
+Formularz `/contact` jest publiczny. Wiadomość jest walidowana (CSRF, limity pól), chroniona honeypotem i limitem 5 wysyłek na godzinę z jednego IP (`config/packages/rate_limiter.yaml`), zapisywana w bazie, a potem wysyłana mailem do `CONTACT_RECIPIENT` z `Reply-To` ustawionym na nadawcę. Błąd wysyłki jest logowany i nie psuje formularza; wiadomość zostaje w bazie. Administratorzy czytają, oznaczają i usuwają wiadomości w `/admin/messages` (licznik nieprzeczytanych jest w menu zębatki). Kolejne maile: nowa klasa w `app/src/Mail/` i szablony w `app/templates/email/`.
 
 ## Zrobione
 
